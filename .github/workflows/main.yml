@@ -1,26 +1,26 @@
-name: Build Android APK
+name: Build Android Only
+run-name: Build Android Only
 on:
+  workflow_dispatch: {}
   push:
-    branches: [ master ]
-  workflow_dispatch:
 jobs:
-  build:
+  Build_Android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.19.0
-      - name: 安装Rust安卓编译链
+          channel: "stable"
+          flutter-version-file: pubspec.yaml
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install clang libssl-dev
+      - name: Rust Android
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
-      - name: 拉取项目依赖
-        run: flutter pub get
-      - name: 编译arm64-release安装包
-        run: flutter build apk --release --target-platform android-arm64 --obfuscate
-      - name: 上传成品APK
-        uses: actions/upload-artifact@v4
+      - run: flutter pub get
+      - run: flutter build apk --release --target-platform android-arm64
+      - uses: actions/upload-artifact@v3
         with:
-          name: Venera_arm64_APK
+          name: Venera_Arm64_APK
           path: build/app/outputs/flutter-apk/app-release.apk
