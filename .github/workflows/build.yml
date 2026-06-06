@@ -1,27 +1,32 @@
 name: Build Android APK
 run-name: Build Android Only
 on:
-  workflow_dispatch: {}
   push:
     branches: [ master ]
+  workflow_dispatch:
 jobs:
   Build_Android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.19.0
-      - name: Install Rust Android Target
+          flutter-version-file: pubspec.yaml
+      - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
-      - name: Install dependencies
+      - name: Install Android SDK dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install clang libssl-dev
+      - name: Fetch project dependencies
         run: flutter pub get
-      - name: Build Release APK(arm64 only)
+      - name: Build arm64 Release APK
         run: flutter build apk --release --target-platform android-arm64 --obfuscate
       - name: Upload finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: Venera_arm64_Release_APK
+          name: Venera_arm64_APK
           path: build/app/outputs/flutter-apk/app-release.apk
