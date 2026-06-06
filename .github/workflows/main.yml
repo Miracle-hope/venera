@@ -1,5 +1,7 @@
 name: Build Android Only
 run-name: Build Android Only
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 on:
   workflow_dispatch: {}
   push:
@@ -10,17 +12,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version-file: pubspec.yaml
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install clang libssl-dev
-      - name: Rust Android
+          flutter: 3.19.0
+      - name: Install system lib
+        run: sudo apt update && sudo apt install clang libssl-dev
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
       - run: flutter pub get
-      - run: flutter build apk --release --target-platform android-arm64
+      - run: flutter build apk --debug --target-platform android-arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: Venera_Arm64_APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: Venera_Debug_APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
