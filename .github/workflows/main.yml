@@ -14,7 +14,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version-file: pubspec.yaml   # 直接从 pubspec.yaml 读取要求的 Flutter 版本
+          flutter-version-file: pubspec.yaml
           architecture: x64
 
       - name: Check Rust toolchain (from rust-toolchain.toml)
@@ -27,7 +27,22 @@ jobs:
 
       - run: flutter pub get
 
-      # 如果遇到许可证问题可保留，原版没加也能跑，加上更稳妥
+      # 生成项目所需的 key.properties 和 debug keystore
+      - name: Generate debug keystore and key.properties
+        run: |
+          # 生成 debug keystore 到 android/app/debug.keystore
+          keytool -genkey -v \
+            -keystore android/app/debug.keystore \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias android \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug, O=Android, C=US"
+          # 创建 android/key.properties，storeFile 路径相对于 android/app 目录
+          echo "storeFile=debug.keystore" > android/key.properties
+          echo "storePassword=android" >> android/key.properties
+          echo "keyPassword=android" >> android/key.properties
+          echo "keyAlias=android" >> android/key.properties
+
       - name: Accept Android SDK licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
