@@ -23,8 +23,6 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # 如需锁定版本可取消下面一行的注释（替换成你项目的版本）
-          # flutter-version: '3.22.2'
 
       - name: Install system deps
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang libssl-dev
@@ -34,13 +32,11 @@ jobs:
         with:
           targets: aarch64-linux-android, armv7-linux-androideabi
 
-      # 自动下载并缓存 NDK，设置 ANDROID_NDK_HOME
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r25c
 
-      # 使用缓存安装 cargo-ndk，不再每次都从源码编译
       - name: Install cargo-ndk
         uses: baptiste0928/cargo-install@v3
         with:
@@ -49,19 +45,10 @@ jobs:
 
       - run: flutter pub get
 
-      # 接受 Android SDK 许可证（避免构建报错）
       - name: Accept Android SDK licenses
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-      # 生成 debug 签名（如果你的项目不需要自定义 debug 签名，可删除这一步）
-      - name: Generate debug keystore and key.properties
-        run: |
-          mkdir -p android/app
-          keytool -genkey -v -keystore android/app/debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
-          echo "storeFile=app/debug.keystore" > android/key.properties
-          echo "storePassword=android" >> android/key.properties
-          echo "keyPassword=android" >> android/key.properties
-          echo "keyAlias=android" >> android/key.properties
+      # 已删除自定义 debug 签名步骤
 
       - run: flutter build apk --debug
 
