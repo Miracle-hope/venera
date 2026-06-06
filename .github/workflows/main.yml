@@ -1,35 +1,31 @@
-name: Build Android Only
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+name: Build Venera Android APK (Debug)
 on:
-  push:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 jobs:
-  Build_Android:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           flutter: stable
-      - name: Create valid key.properties
-        run: |
-          mkdir -p android
-          cat > android/key.properties <<EOF
-storeFile=debug.keystore
-storePassword=android
-keyPassword=android
-keyAlias=android
-EOF
       - name: Install system deps
-        run: sudo apt update && sudo apt install clang libssl-dev
-      - name: Setup Rust Android
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang libssl-dev
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android
+          targets: aarch64-linux-android, armv7-linux-androideabi
+      - name: Setup Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip -q android-ndk-r25c-linux.zip
+          echo "ANDROID_NDK_HOME=$PWD/android-ndk-r25c" >> $GITHUB_ENV
+      - run: cargo install cargo-ndk
       - run: flutter pub get
-      - run: flutter build apk --debug --target-platform android-arm64
+      - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
-          name: Venera_Debug_APK
+          name: Venera-Debug-APK
           path: build/app/outputs/flutter-apk/*.apk
