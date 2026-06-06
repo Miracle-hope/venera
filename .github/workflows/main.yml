@@ -12,11 +12,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter: stable
-      # 写入基础配置，不再空文件
       - name: Create valid key.properties
         run: |
           mkdir -p android
-          cat > android/key.properties << EOF
+          cat > android/key.properties <<EOF
 storeFile=debug.keystore
 storePassword=android
 keyPassword=android
