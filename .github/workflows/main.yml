@@ -12,18 +12,19 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter: stable
-      - name: 提前删掉项目签名配置，规避key.properties缺失报错
+      # 自动生成空白key.properties，骗过gradle读取
+      - name: Generate empty key.properties
         run: |
-          rm -f android/key.properties
-      - name: 安装依赖库
+          mkdir -p android
+          echo > android/key.properties
+      - name: Install system deps
         run: sudo apt update && sudo apt install clang libssl-dev
-      - name: 配置Rust安卓编译链
+      - name: Setup Rust Android
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
       - run: flutter pub get
-      # 改用--debug 调试包，不需要签名文件
-      - run: flutter build apk --debug
+      - run: flutter build apk --debug --target-platform android-arm64
       - uses: actions/upload-artifact@v4
         with:
           name: Venera_Debug_APK
