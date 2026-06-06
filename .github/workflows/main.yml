@@ -12,11 +12,16 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter: stable
-      # 自动生成空白key.properties，骗过gradle读取
-      - name: Generate empty key.properties
+      # 写入基础配置，不再空文件
+      - name: Create valid key.properties
         run: |
           mkdir -p android
-          echo > android/key.properties
+          cat > android/key.properties << EOF
+storeFile=debug.keystore
+storePassword=android
+keyPassword=android
+keyAlias=android
+EOF
       - name: Install system deps
         run: sudo apt update && sudo apt install clang libssl-dev
       - name: Setup Rust Android
