@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -28,12 +33,13 @@ jobs:
       - run: flutter pub get
       - name: Generate debug keystore and key.properties
         run: |
-          keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=Debug, OU=Debug, O=Debug, L=Debug, ST=Debug, C=US"
+          keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
           mkdir -p android
           echo "storeFile=../debug.keystore" > android/key.properties
           echo "storePassword=android" >> android/key.properties
           echo "keyPassword=android" >> android/key.properties
           echo "keyAlias=android" >> android/key.properties
+          cat android/key.properties
       - run: flutter build apk --debug
       - uses: actions/upload-artifact@v4
         with:
