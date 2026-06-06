@@ -1,0 +1,27 @@
+name: Build Android APK
+run-name: Build Android Only
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ master ]
+jobs:
+  Build_Android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.19.0
+      - name: Install Rust Android Target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build Release APK(arm64 only)
+        run: flutter build apk --release --target-platform android-arm64 --obfuscate
+      - name: Upload finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Venera_arm64_Release_APK
+          path: build/app/outputs/flutter-apk/app-release.apk
