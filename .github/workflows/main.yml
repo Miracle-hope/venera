@@ -52,7 +52,8 @@ jobs:
 
       - name: Generate debug keystore and key.properties
         run: |
-          keytool -genkey -v -keystore android/debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
+          mkdir -p android/app
+          keytool -genkey -v -keystore android/app/debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias android -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
           echo "storeFile=debug.keystore" > android/key.properties
           echo "storePassword=android" >> android/key.properties
           echo "keyPassword=android" >> android/key.properties
