@@ -1,7 +1,7 @@
 name: Prepare Project for Local Build (with pub cache)
 
 on:
-  workflow_dispatch:   # 手动触发
+  workflow_dispatch:
 
 jobs:
   prepare:
@@ -14,24 +14,28 @@ jobs:
           channel: 'stable'
           flutter-version-file: pubspec.yaml
 
-      - name: Download all dependencies (including git deps)
+      - name: Download all dependencies
         run: flutter pub get
 
-      # 打包项目源码，排除 .git、build、.dart_tool 等可能变化的目录
-      - name: Pack project
+      # 把项目复制到一个临时目录（排除 .git 和不必要的构建目录）
+      - name: Copy project to stable directory
         run: |
-          tar --warning=no-file-changed \
-              -czf venera-project.tar.gz \
-              --exclude='.git' \
-              --exclude='build' \
-              --exclude='.dart_tool' \
-              .
+          mkdir project-copy
+          rsync -a \
+            --exclude='.git' \
+            --exclude='build' \
+            --exclude='.dart_tool' \
+            ./ project-copy/
 
-      # 打包 pub 缓存（通常不会变化，但保险加上 --warning）
+      # 打包这个稳定副本
+      - name: Pack project
+        run: tar -czf venera-project.tar.gz -C project-copy .
+
+      # 打包 pub 缓存
       - name: Pack pub cache
-        run: tar --warning=no-file-changed -czf pub-cache.tar.gz -C ~/.pub-cache .
+        run: tar -czf pub-cache.tar.gz -C ~/.pub-cache .
 
-      # 上传
+      # 上传两个包
       - uses: actions/upload-artifact@v4
         with:
           name: venera-full
