@@ -17,14 +17,22 @@ jobs:
       - name: Download all dependencies (including git deps)
         run: flutter pub get
 
-      - name: Pack project (without .git)
-        run: tar -czf venera-project.tar.gz --exclude='.git' .
+      # 打包项目源码，排除 .git、build、.dart_tool 等可能变化的目录
+      - name: Pack project
+        run: |
+          tar --warning=no-file-changed \
+              -czf venera-project.tar.gz \
+              --exclude='.git' \
+              --exclude='build' \
+              --exclude='.dart_tool' \
+              .
 
+      # 打包 pub 缓存（通常不会变化，但保险加上 --warning）
       - name: Pack pub cache
-        run: tar -czf pub-cache.tar.gz -C ~/.pub-cache .
+        run: tar --warning=no-file-changed -czf pub-cache.tar.gz -C ~/.pub-cache .
 
-      - name: Upload both archives
-        uses: actions/upload-artifact@v4
+      # 上传
+      - uses: actions/upload-artifact@v4
         with:
           name: venera-full
           path: |
