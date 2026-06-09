@@ -1,4 +1,4 @@
-name: Prepare Project for Local Build (with pub cache)
+name: Prepare Project for Local Build (with full cache)
 
 on:
   workflow_dispatch:
@@ -8,37 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version-file: pubspec.yaml
+      - run: flutter pub get
 
-      - name: Download all dependencies
-        run: flutter pub get
+      # 确认 pub 缓存中 git 依赖存在
+      - name: List git cache
+        run: ls -la ~/.pub-cache/git
 
-      # 把项目复制到一个临时目录（排除 .git 和不必要的构建目录）
-      - name: Copy project to stable directory
-        run: |
-          mkdir project-copy
-          rsync -a \
-            --exclude='.git' \
-            --exclude='build' \
-            --exclude='.dart_tool' \
-            ./ project-copy/
-
-      # 打包这个稳定副本
-      - name: Pack project
-        run: tar -czf venera-project.tar.gz -C project-copy .
-
-      # 打包 pub 缓存
+      # 使用 --dereference 解决软链接，确保全部打入
       - name: Pack pub cache
-        run: tar -czf pub-cache.tar.gz -C ~/.pub-cache .
+        run: tar -czf pub-cache.tar.gz --dereference -C ~/.pub-cache .
 
-      # 上传两个包
       - uses: actions/upload-artifact@v4
         with:
-          name: venera-full
-          path: |
-            venera-project.tar.gz
-            pub-cache.tar.gz
+          name: pub-cache-only
+          path: pub-cache.tar.gz
